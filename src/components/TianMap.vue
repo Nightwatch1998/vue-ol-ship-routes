@@ -6,24 +6,23 @@
 </template>
 
 <script>
-import {ref, watch, onMounted} from 'vue'
+import { onMounted } from 'vue';
 
-import 'ol/ol.css';
-import Map from 'ol/Map';
-import View from 'ol/View';
+import { getTopLeft, getWidth } from 'ol/extent';
 import TileLayer from 'ol/layer/Tile';
+import Map from 'ol/Map';
+import 'ol/ol.css';
+import { fromLonLat, get as getProjection } from 'ol/proj';
 import WMTS from 'ol/source/WMTS';
-import {fromLonLat, get as getProjection} from 'ol/proj';
-import {getTopLeft, getWidth} from 'ol/extent';
+import View from 'ol/View';
 
 import {
-    FullScreen,
+    defaults as defaultControls, FullScreen,
     MousePosition,
     OverviewMap,
-    ScaleLine,
-    defaults as defaultControls
-    } from 'ol/control';
-import {createStringXY} from 'ol/coordinate';
+    ScaleLine
+} from 'ol/control';
+import { createStringXY } from 'ol/coordinate';
 import WMTSTileGrid from 'ol/tilegrid/WMTS';
 
 export default {
