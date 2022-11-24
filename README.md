@@ -1,6 +1,8 @@
-# vue-ol-ship-route
+## vue-ol-ship-route
 使用openlayers + 天地图WMTS服务，实现船舶实时轨迹展示
 
+## 技术栈
+vue3.0 + element plus+ openlayers
 
 ## Project setup
 ```

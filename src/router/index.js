@@ -4,6 +4,7 @@ import OsmMap from '@/components/OsmMap'
 import BingMap from '@/components/BingMap'
 import Amap from '@/components/Amap'
 import TianMap from '@/components/TianMap'
+import Test from '@/test/Test'
 
 const routes = [
   {
@@ -30,6 +31,12 @@ const routes = [
     path:'/tian',
     name:'TianMap',
     component: TianMap
+  },
+  ,
+  {
+    path:'/test',
+    name:'Test',
+    component: Test
   }
 ]
 
