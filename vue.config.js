@@ -6,5 +6,6 @@ module.exports = {
             errors: true
         }
     },
-    lintOnSave: false
+    lintOnSave: false,
+    publicPath:'/'
 }
