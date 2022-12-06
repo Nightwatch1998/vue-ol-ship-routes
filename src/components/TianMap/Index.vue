@@ -23,9 +23,11 @@ import {baseLayer,noteLayer,waterLayer} from './map/index'
 import {shipRoute} from '@/assets/data/route.js'
 import Feature from 'ol/Feature';
 import {getVectorContext} from 'ol/render';
-
+import { rotate } from 'ol/transform';
+import {getIconRotation} from '@/utils/mathtool.js'
 
 console.log("地图初始化中...")
+let map = null
 // 初始化地图
 const initMap = ()=>{
     const map  = new Map({
@@ -61,18 +63,8 @@ const styles = {
         }),
     }),
     'shipMarker':new Style({
-        image:new CircleStyle({
-            radius: 7,
-            fill : new Fill({color:'black'}),
-            stroke:new Stroke({
-                color:'White',
-                width:2
-            })
-        })
-    }),
-    'shipIcon':new Style({
         image:new Icon({
-            anchor:[0.5,1],
+            anchor:[0.5,0.5],
             src:'icon/boat.png',
             scale:0.8,
             color:'green',
@@ -93,9 +85,12 @@ const addGeoJsonByFeature = ()=>{
 
     // 船舶图标
     const shipMarker = new Feature({
-        type:'shipIcon',
+        type:'shipMarker',
         geometry: new Point([13334528.214218894,4739881.4851143295])
     })
+    // 设置样式
+    shipMarker.setStyle(styles['shipMarker'])
+
     const routeSource = new VectorSource({
         features:[ routeFeature, shipMarker ]
     })
@@ -130,7 +125,7 @@ const addGeoJsonByLayer = ()=>{
 
 // 生命周期钩子
 onMounted(()=>{
-    const map = initMap()
+    map = initMap()
     const {vectorLayer,routeFeature,shipMarker} = addGeoJsonByFeature()
     map.addLayer(vectorLayer)
 
@@ -138,13 +133,17 @@ onMounted(()=>{
     let distance = 0
     let lastTime = Date.now()
 
+    // 船舶位置刷新的新旧位置
+    let oldpos = [13334528.214218894,4739881.4851143295]
+    let newpos = []
+
     // 添加船舶运动动画
     const startShipMove = (event)=>{
         // 获取要素的geometry
         const route = routeFeature.getGeometry()
         const position = shipMarker.getGeometry()
         // console.log(event)
-        const speed = Number(50);
+        const speed = Number(20);
         const time = event.frameState.time;
         const elapsedTime = time - lastTime;
         // console.log(elapsedTime)
@@ -155,17 +154,24 @@ onMounted(()=>{
         const currentCoordinate = route.getCoordinateAt(
             distance > 1 ? 2 - distance : distance
         );
-
         position.setCoordinates(currentCoordinate);
+
+
+        // 计算船舶图标方向
+        newpos = shipMarker.getGeometry().getCoordinates()
+        const heading = getIconRotation(oldpos,newpos)
+        // console.log(heading)
+        oldpos = newpos
         // 设置船舶图标方向
-        // styles.shipIcon.setRotation(0)
-        const vectorContext = getVectorContext(event);
-        vectorContext.setStyle(styles.shipIcon);
-        vectorContext.drawGeometry(position);
-        // tell OpenLayers to continue the postrender animation
+        shipMarker.getStyle().getImage().setRotation(heading)
+
+        // 更新设置后渲染地图
         map.render();
     }
     vectorLayer.on('postrender',startShipMove)
+
+    // 监听船舶
+    
 })
 
 </script>
