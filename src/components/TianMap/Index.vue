@@ -9,21 +9,21 @@
 import { onMounted } from 'vue';
 import Map from 'ol/Map';
 import View from 'ol/View';
+import 'ol/ol.css';
 import {transform ,fromLonLat} from 'ol/proj';
-import {defaults as defaultControls, FullScreen,MousePosition,OverviewMap,ScaleLine} from 'ol/control';
 import { createStringXY, format } from 'ol/coordinate';
+import {defaults as defaultControls, FullScreen,MousePosition,OverviewMap,ScaleLine} from 'ol/control';
 import Point from 'ol/geom/Point';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import {Style,Stroke,Fill,Icon} from 'ol/style'
-import CircleStyle from 'ol/style/Circle';
-import 'ol/ol.css';
+import Feature from 'ol/Feature';
+import PopupFeature from 'ol-ext/overlay/PopupFeature'
+
+// 引入自定义工具
 import {baseLayer,noteLayer,waterLayer} from './map/index'
 import {shipRoute} from '@/assets/data/route.js'
-import Feature from 'ol/Feature';
-import {getVectorContext} from 'ol/render';
-import { rotate } from 'ol/transform';
 import {getIconRotation} from '@/utils/mathtool.js'
 
 console.log("地图初始化中...")
@@ -44,7 +44,7 @@ const initMap = ()=>{
             new OverviewMap(),
             new ScaleLine()
         ]),
-        layers:[baseLayer,noteLayer],
+        layers:[baseLayer,noteLayer,waterLayer],
         target: 'container',
         view: new View({
             center: fromLonLat([118.34,38.69]),
@@ -123,6 +123,28 @@ const addGeoJsonByLayer = ()=>{
     map.addLayer(shipRouteLayer)
 }
 
+// 监听缩放级别，更新船舶图标尺寸
+const startlistenOnShipIconScale = (shipMarker)=>{
+    map.getView().on('change:resolution', (event) => {
+        let newZoom = map.getView().getZoom().toFixed(0)
+        let newScale = 0.8
+        // 设置船舶图标尺寸
+        if(newZoom<=7){
+            newScale = 0
+        }else if(newZoom<=8){
+            newScale = 0.6
+        }else if(newZoom<=10){
+            newScale = 0.8
+        }else{
+            newScale = 0.8
+        }
+        shipMarker.getStyle().getImage().setScale(newScale)
+        // console.log(newZoom )
+        // 更新设置后渲染地图
+        map.render();
+    });
+}
+
 // 生命周期钩子
 onMounted(()=>{
     map = initMap()
@@ -132,7 +154,6 @@ onMounted(()=>{
     // 初始化行驶距离和时间
     let distance = 0
     let lastTime = Date.now()
-
     // 船舶位置刷新的新旧位置
     let oldpos = [13334528.214218894,4739881.4851143295]
     let newpos = []
@@ -155,8 +176,6 @@ onMounted(()=>{
             distance > 1 ? 2 - distance : distance
         );
         position.setCoordinates(currentCoordinate);
-
-
         // 计算船舶图标方向
         newpos = shipMarker.getGeometry().getCoordinates()
         const heading = getIconRotation(oldpos,newpos)
@@ -164,14 +183,19 @@ onMounted(()=>{
         oldpos = newpos
         // 设置船舶图标方向
         shipMarker.getStyle().getImage().setRotation(heading)
-
         // 更新设置后渲染地图
         map.render();
     }
     vectorLayer.on('postrender',startShipMove)
 
-    // 监听船舶
-    
+    // 更新船舶图标尺寸
+    startlistenOnShipIconScale(shipMarker)
+
+    // 水文数据展示牌
+    // const shipPopUp = new PopupFeature({
+
+    // })
+    // console.log(PopupFeature)
 })
 
 </script>
