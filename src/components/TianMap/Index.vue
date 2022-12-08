@@ -1,12 +1,13 @@
 <template>
     <div id="container"></div>
+    <div ref="popupContainer" id="popup" class="ol-popup">1231</div>
     <div id="mouse-position" class="mouse-position-wrapper">
         <div class="custom-mouse-position"></div>
     </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import {ref, onMounted } from 'vue';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import 'ol/ol.css';
@@ -19,7 +20,6 @@ import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import {Style,Stroke,Fill,Icon} from 'ol/style'
 import Feature from 'ol/Feature';
-import PopupFeature from 'ol-ext/overlay/PopupFeature'
 
 // 引入自定义工具
 import {baseLayer,noteLayer,waterLayer} from './map/index'
@@ -28,6 +28,7 @@ import {getIconRotation} from '@/utils/mathtool.js'
 
 console.log("地图初始化中...")
 let map = null
+
 // 初始化地图
 const initMap = ()=>{
     const map  = new Map({
@@ -192,10 +193,17 @@ onMounted(()=>{
     startlistenOnShipIconScale(shipMarker)
 
     // 水文数据展示牌
-    // const shipPopUp = new PopupFeature({
-
+    // let container = document.getElementById('popup')
+    // console.log(container)
+    // const overlay = new OverLay({
+    //     element: container,
+    //     autoPan:{
+    //         animation:{
+    //             duration:250
+    //         }
+    //     }
     // })
-    // console.log(PopupFeature)
+    // map.addOverlay(overlay)
 })
 
 </script>
