@@ -1,6 +1,11 @@
 <template>
-    <div id="container"></div>
-    <div ref="popupContainer" id="popup" class="ol-popup">1231</div>
+    <div id="map"></div>
+    <div ref="container" class="popup-container">
+        <div id="popup" class="ol-popup">
+            <a href="#" ref="closer" id="popup-closer" class="ol-popup-closer" @click="onClose"></a>
+            <div ref="content" id="popup-content">潮位:3.21m,水深:15.3m</div>
+        </div>
+    </div>
     <div id="mouse-position" class="mouse-position-wrapper">
         <div class="custom-mouse-position"></div>
     </div>
@@ -20,6 +25,7 @@ import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import {Style,Stroke,Fill,Icon} from 'ol/style'
 import Feature from 'ol/Feature';
+import Overlay from 'ol/Overlay'
 
 // 引入自定义工具
 import {baseLayer,noteLayer,waterLayer} from './map/index'
@@ -27,11 +33,22 @@ import {shipRoute} from '@/assets/data/route.js'
 import {getIconRotation} from '@/utils/mathtool.js'
 
 console.log("地图初始化中...")
-let map = null
+// 全局对象
+let map = ref(null) // 地图对象
+let shipMarker = ref(null) // 船舶图标
+let routeFeature = ref(null) // 船舶轨迹
+let vectorLayer = ref(null) // 矢量图层
+let shipPopup = ref(null) // 信息提示框
+let isShowPopup = ref(true) // 信息提示框展示开关
+
+// ref属性获取的dom元素
+let container = ref()
+let content = ref()
+let closer = ref()
 
 // 初始化地图
 const initMap = ()=>{
-    const map  = new Map({
+    map = new Map({
         // controls是一个Collection对象
         controls: defaultControls().extend([
             new FullScreen(),
@@ -46,7 +63,7 @@ const initMap = ()=>{
             new ScaleLine()
         ]),
         layers:[baseLayer,noteLayer,waterLayer],
-        target: 'container',
+        target: 'map',
         view: new View({
             center: fromLonLat([118.34,38.69]),
             zoom: 9
@@ -78,14 +95,13 @@ const styles = {
  * 通过要素加载GeoJson
  */
 const addGeoJsonByFeature = ()=>{
-
     // 船舶路径
     const routeFeatures = (new GeoJSON({featureProjection:'EPSG:3857'})).readFeatures(shipRoute)
-    const routeFeature = routeFeatures[0]
+    routeFeature = routeFeatures[0]
     routeFeature.set('type','route')
 
     // 船舶图标
-    const shipMarker = new Feature({
+    shipMarker = new Feature({
         type:'shipMarker',
         geometry: new Point([13334528.214218894,4739881.4851143295])
     })
@@ -95,7 +111,7 @@ const addGeoJsonByFeature = ()=>{
     const routeSource = new VectorSource({
         features:[ routeFeature, shipMarker ]
     })
-    const vectorLayer = new VectorLayer({
+    vectorLayer = new VectorLayer({
         source:routeSource,
         style:function(feature){
             return styles[feature.get('type')]
@@ -146,19 +162,14 @@ const startlistenOnShipIconScale = (shipMarker)=>{
     });
 }
 
-// 生命周期钩子
-onMounted(()=>{
-    map = initMap()
-    const {vectorLayer,routeFeature,shipMarker} = addGeoJsonByFeature()
-    map.addLayer(vectorLayer)
-
+// 开启船舶移动动画
+const startShipMove = ()=>{
     // 初始化行驶距离和时间
     let distance = 0
     let lastTime = Date.now()
     // 船舶位置刷新的新旧位置
     let oldpos = [13334528.214218894,4739881.4851143295]
     let newpos = []
-
     // 添加船舶运动动画
     const startShipMove = (event)=>{
         // 获取要素的geometry
@@ -184,32 +195,73 @@ onMounted(()=>{
         oldpos = newpos
         // 设置船舶图标方向
         shipMarker.getStyle().getImage().setRotation(heading)
+        // 更新信息展示牌
+        if(isShowPopup.value){
+            shipPopup.setPosition(newpos)
+        }else{
+            shipPopup.setPosition(undefined)
+        }
         // 更新设置后渲染地图
         map.render();
     }
     vectorLayer.on('postrender',startShipMove)
+}
 
+// 添加shipPopup,水文信息展示
+const addShipPopup = ()=>{
+    const popupContainer = container.value.children[0]
+    // console.log(popupContainer)
+    shipPopup = new Overlay({
+        element:popupContainer,
+            autoPan: {
+                animation: {
+                    duration: 250,
+            },
+        },
+        position:fromLonLat([119.786,39.127])
+    })
+    // console.log(closer.value)
+    map.addOverlay(shipPopup)
+}
+
+// shipPopup关闭事件
+const onClose = ()=>{
+    // console.log('被点击了')
+    shipPopup.setPosition(undefined)
+    isShowPopup.value = false
+    return false
+}
+
+// 生命周期钩子
+onMounted(()=>{
+    map = initMap()
+    // 初始化图层和要素
+    addGeoJsonByFeature()
+    map.addLayer(vectorLayer)
+
+    // 添加水文信息展示
+    addShipPopup()
     // 更新船舶图标尺寸
     startlistenOnShipIconScale(shipMarker)
-
-    // 水文数据展示牌
-    // let container = document.getElementById('popup')
-    // console.log(container)
-    // const overlay = new OverLay({
-    //     element: container,
-    //     autoPan:{
-    //         animation:{
-    //             duration:250
-    //         }
+    // 开启船舶运动
+    startShipMove()
+    // console.log(vectorLayer)
+    // map.on('pointermove',e=>{
+    //     let pixel = map.getEventPixel(e.originalEvent)
+    //     let hit = map.hasFeatureAtPixel(pixel,{
+    //         layerFilter:()=>{return true}
+    //     })
+    //     if(hit){
+    //         console.log("选中")
+    //         isShowPopup.value = true
     //     }
     // })
-    // map.addOverlay(overlay)
 })
 
 </script>
 
 <style lang='scss' scoped>
-    #container{
+    #map{
         width: 100%;
         height: 100%;
     }
@@ -224,4 +276,45 @@ onMounted(()=>{
         z-index:999;
     }
 
+    .ol-popup {
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #cccccc;
+        bottom: 12px;
+        left: -50px;
+        min-width: 280px;
+    }
+    .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+    .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+    }
+    .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 48px;
+        margin-left: -11px;
+    }
+    .ol-popup-closer {
+        text-decoration: none;
+        position: absolute;
+        top: 2px;
+        right: 8px;
+    }
+    .ol-popup-closer:after {
+        content: "✖";
+    }
 </style>
