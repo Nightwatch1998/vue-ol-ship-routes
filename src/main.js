@@ -6,6 +6,7 @@ import store from './store'
 
 // CSS
 import 'element-plus/dist/index.css'
+import 'ol-ext/dist/ol-ext.min.css'
 
 const app = createApp(App)
 app.use(ElementPlus)

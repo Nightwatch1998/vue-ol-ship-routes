@@ -10,7 +10,7 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "core-js": "^3.6.5",
-    "element-plus": "^2.2.22",
+    "element-plus": "^2.2.26",
     "ol": "^7.1.0",
     "ol-ext": "^4.0.4",
     "vue": "^3.0.0",

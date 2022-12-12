@@ -26,6 +26,7 @@ import GeoJSON from 'ol/format/GeoJSON';
 import {Style,Stroke,Fill,Icon} from 'ol/style'
 import Feature from 'ol/Feature';
 import Overlay from 'ol/Overlay'
+import LayerSwitcherImage from 'ol-ext/control/LayerSwitcherImage'
 
 // 引入自定义工具
 import {baseLayer,noteLayer,waterLayer} from './map/index'
@@ -54,13 +55,20 @@ const initMap = ()=>{
             new FullScreen(),
             // 修改默认位置
             new MousePosition({
-                coordinateFormat:createStringXY(6),
+                // coordinateFormat:createStringXY(6),
+                coordinateFormat:(coord)=>{
+                    const pos = transform(coord,'EPSG:3857','EPSG:4326')
+                    const stringifyFunc = createStringXY(6)
+                    const str = stringifyFunc(pos)
+                    return str
+                },
                 projection: 'EPSG:3857',
                 className:'custom-mouse-position',
                 target:document.getElementById('mouse-position')
             }),
             new OverviewMap(),
-            new ScaleLine()
+            new ScaleLine(),
+            new LayerSwitcherImage()
         ]),
         layers:[baseLayer,noteLayer,waterLayer],
         target: 'map',
@@ -112,6 +120,8 @@ const addGeoJsonByFeature = ()=>{
         features:[ routeFeature, shipMarker ]
     })
     vectorLayer = new VectorLayer({
+        title:'船舶轨迹',
+        preview:'icon/layerSwitcher/ship_route.jpg',
         source:routeSource,
         style:function(feature){
             return styles[feature.get('type')]
@@ -212,12 +222,7 @@ const addShipPopup = ()=>{
     const popupContainer = container.value.children[0]
     // console.log(popupContainer)
     shipPopup = new Overlay({
-        element:popupContainer,
-            autoPan: {
-                animation: {
-                    duration: 250,
-            },
-        },
+        element: popupContainer,
         position:fromLonLat([119.786,39.127])
     })
     // console.log(closer.value)
@@ -241,21 +246,12 @@ onMounted(()=>{
 
     // 添加水文信息展示
     addShipPopup()
+
     // 更新船舶图标尺寸
     startlistenOnShipIconScale(shipMarker)
+
     // 开启船舶运动
-    startShipMove()
-    // console.log(vectorLayer)
-    // map.on('pointermove',e=>{
-    //     let pixel = map.getEventPixel(e.originalEvent)
-    //     let hit = map.hasFeatureAtPixel(pixel,{
-    //         layerFilter:()=>{return true}
-    //     })
-    //     if(hit){
-    //         console.log("选中")
-    //         isShowPopup.value = true
-    //     }
-    // })
+    // startShipMove()
 })
 
 </script>

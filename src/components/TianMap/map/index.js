@@ -21,6 +21,8 @@ let accessKey = '7b7fbb3f7001c08bc310cf7c33b753ff'
 // 天地图图层
 //  矢量底图
 export const baseLayer = new TileLayer({
+    title:'天地图底图',
+    preview:'icon/layerSwitcher/tian_vector_base.png',
     source: new WMTS({
         url:`http://t{0-7}.tianditu.gov.cn/vec_w/wmts?tk=${accessKey}`,
         projection,
@@ -38,6 +40,8 @@ export const baseLayer = new TileLayer({
 })
 // 注记图层
 export const noteLayer = new TileLayer({
+    title:'注记图层',
+    preview:'icon/layerSwitcher/tian_vector_note.png',
     source: new WMTS({
         url:`http://t{0-7}.tianditu.gov.cn/cva_w/wmts?tk=${accessKey}`,
         projection,
@@ -55,6 +59,8 @@ export const noteLayer = new TileLayer({
 })
 // 水深图层
 export const waterLayer =  new TileLayer({
+    title:'水深图层',
+    preview:'icon/layerSwitcher/water_depth_icon.png',
     source: new WMTS({
         url:`http://t{0-7}.tianditu.gov.cn/shuishen_w/wmts?tk=${accessKey}`,
         projection,
