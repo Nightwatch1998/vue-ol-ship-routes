@@ -1,11 +1,11 @@
 <template>
     <div id="map"></div>
-    <div ref="container" class="popup-container">
+    <!-- <div ref="container" class="popup-container">
         <div id="popup" class="ol-popup">
             <a href="#" ref="closer" id="popup-closer" class="ol-popup-closer" @click="onClose"></a>
             <div ref="content" id="popup-content">潮位:3.21m,水深:15.3m</div>
         </div>
-    </div>
+    </div> -->
     <div id="mouse-position" class="mouse-position-wrapper">
         <div class="custom-mouse-position"></div>
     </div>
@@ -28,8 +28,8 @@ import Feature from 'ol/Feature';
 import Overlay from 'ol/Overlay'
 import LayerSwitcherImage from 'ol-ext/control/LayerSwitcherImage'
 
-// 引入自定义工具
-import {baseLayer,noteLayer,waterLayer} from './map/index'
+// 引入自定义图层
+import {baseLayer,imageLayer,noteLayer,waterLayer,geoserverLayer} from './map/index'
 import {shipRoute} from '@/assets/data/route.js'
 import {getIconRotation} from '@/utils/mathtool.js'
 
@@ -70,7 +70,7 @@ const initMap = ()=>{
             new ScaleLine(),
             new LayerSwitcherImage()
         ]),
-        layers:[baseLayer,noteLayer,waterLayer],
+        layers:[baseLayer,imageLayer,noteLayer,waterLayer,geoserverLayer],
         target: 'map',
         view: new View({
             center: fromLonLat([118.34,38.69]),
@@ -241,14 +241,14 @@ const onClose = ()=>{
 onMounted(()=>{
     map = initMap()
     // 初始化图层和要素
-    addGeoJsonByFeature()
-    map.addLayer(vectorLayer)
+    // addGeoJsonByFeature()
+    // map.addLayer(vectorLayer)
 
     // 添加水文信息展示
-    addShipPopup()
+    // addShipPopup()
 
     // 更新船舶图标尺寸
-    startlistenOnShipIconScale(shipMarker)
+    // startlistenOnShipIconScale(shipMarker)
 
     // 开启船舶运动
     // startShipMove()

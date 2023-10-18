@@ -1,8 +1,10 @@
 import { getTopLeft, getWidth } from 'ol/extent';
-import TileLayer from 'ol/layer/Tile';
+import TileLayer  from 'ol/layer/Tile';
 import { fromLonLat, get as getProjection } from 'ol/proj';
+import TileWMS from 'ol/source/TileWMS'
 import WMTS from 'ol/source/WMTS';
 import WMTSTileGrid from 'ol/tilegrid/WMTS';
+
 
 const projection = getProjection('EPSG:3857')
 // 获取投影的有效性范围
@@ -38,6 +40,27 @@ export const baseLayer = new TileLayer({
         wrapX:true
     })
 })
+
+//  影像底图
+export const imageLayer = new TileLayer({
+  title:'天地图底图',
+  preview:'icon/layerSwitcher/tian_image.png',
+  source: new WMTS({
+      url:`http://t{0-7}.tianditu.gov.cn/img_w/wmts?tk=${accessKey}`,
+      projection,
+      layer:'img',
+      matrixSet:'w',
+      format:'tiles',
+      style:'default',
+      tileGrid: new WMTSTileGrid({
+          origin: getTopLeft(projectionExtent),
+          resolutions,
+          matrixIds
+      }),
+      wrapX:true
+  })
+})
+
 // 注记图层
 export const noteLayer = new TileLayer({
     title:'注记图层',
@@ -75,4 +98,15 @@ export const waterLayer =  new TileLayer({
         }),
         wrapX:true
     })
+})
+
+// geoserver发布的服务
+export const geoserverLayer = new TileLayer({
+  title:'电子航道图',
+  preview:'',
+  source: new TileWMS({
+    url: 'http://localhost:8080/geoserver/HHIENC/wms',
+    params: {'LAYERS': 'HHIENC:HHIENC', 'TILED': true},
+    serverType: 'geoserver'
+  })
 })
