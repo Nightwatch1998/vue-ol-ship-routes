@@ -4,7 +4,11 @@ import { fromLonLat, get as getProjection } from 'ol/proj';
 import TileWMS from 'ol/source/TileWMS'
 import WMTS from 'ol/source/WMTS';
 import WMTSTileGrid from 'ol/tilegrid/WMTS';
-
+import XYZ from 'ol/source/XYZ';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import {Style, Fill, Stroke} from 'ol/style';
+import GeoJSON from 'ol/format/GeoJSON';
 
 const projection = getProjection('EPSG:3857')
 // 获取投影的有效性范围
@@ -109,4 +113,33 @@ export const geoserverLayer = new TileLayer({
     params: {'LAYERS': 'HHIENC:HHIENC', 'TILED': true},
     serverType: 'geoserver'
   })
+})
+
+// 加载第三方海图
+export const customIencLayer = new TileLayer({
+  title:'电子海图',
+  source: new XYZ({
+    url: 'http://api.hifleet.com/nauticalmap/en/token?x={x}&y={y}&z={z}&usertoken=yeeirz2zgQosu4JluCXgJSP8N20IYItmY0m24S/L3uoY/CeJy8E9Rkeru6W951FV',
+    tileSize: 256, // 瓦片大小，通常为 256x256
+  }),
+})
+
+// 创建样式
+const vectorStyle = new Style({
+  fill: new Fill({
+    color: 'rgba(0, 255, 255, 0.4)', // 填充颜色
+  }),
+  stroke: new Stroke({
+    color: '#00FFFF', // 边界颜色
+    width: 2, // 边界宽度
+  }),
+});
+
+// 加载geojson 文件
+export const geojsonLayer = new VectorLayer({
+  source: new VectorSource({
+    url: '/geojson/北通航孔航道范围-分块.geojson', // GeoJSON 文件路径
+    format: new GeoJSON(), // 格式解析器
+  }),
+  style: vectorStyle, // 应用样式
 })

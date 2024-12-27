@@ -29,7 +29,7 @@ import Overlay from 'ol/Overlay'
 import LayerSwitcherImage from 'ol-ext/control/LayerSwitcherImage'
 
 // 引入自定义图层
-import {baseLayer,imageLayer,noteLayer,waterLayer,geoserverLayer} from './map/index'
+import {baseLayer,imageLayer,noteLayer,waterLayer,geoserverLayer,customIencLayer,geojsonLayer} from './map/index'
 import {shipRoute} from '@/assets/data/route.js'
 import {getIconRotation} from '@/utils/mathtool.js'
 
@@ -70,11 +70,13 @@ const initMap = ()=>{
             new ScaleLine(),
             new LayerSwitcherImage()
         ]),
-        layers:[baseLayer,imageLayer,noteLayer,waterLayer,geoserverLayer],
+        layers:[baseLayer,imageLayer,noteLayer,customIencLayer,geojsonLayer],
         target: 'map',
         view: new View({
-            center: fromLonLat([118.34,38.69]),
-            zoom: 9
+          // 杭州湾
+            center: fromLonLat([121.12,30.47]),
+            // rotation: Math.PI / 6,
+            zoom: 12
         })
     })
     return map
@@ -240,17 +242,17 @@ const onClose = ()=>{
 // 生命周期钩子
 onMounted(()=>{
     map = initMap()
-    // 初始化图层和要素
+    // // 初始化图层和要素
     // addGeoJsonByFeature()
     // map.addLayer(vectorLayer)
 
-    // 添加水文信息展示
+    // // 添加水文信息展示
     // addShipPopup()
 
-    // 更新船舶图标尺寸
+    // // 更新船舶图标尺寸
     // startlistenOnShipIconScale(shipMarker)
 
-    // 开启船舶运动
+    // // 开启船舶运动
     // startShipMove()
 })
 
@@ -263,12 +265,12 @@ onMounted(()=>{
     }
 
     .mouse-position-wrapper{
-        width:200px; 
-        height:20px; 
-        color:rgb(0, 0, 0); 
-        position:absolute; 
-        right:20px; 
-        bottom:6px; 
+        width:200px;
+        height:20px;
+        color:rgb(0, 0, 0);
+        position:absolute;
+        right:20px;
+        bottom:6px;
         z-index:999;
     }
 
